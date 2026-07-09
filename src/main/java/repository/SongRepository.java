@@ -3,6 +3,7 @@ package repository;
 import model.Song;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class SongRepository {
@@ -16,10 +17,10 @@ public class SongRepository {
         songs.add(song);
     }
 
-    public boolean remove(Song song){
+    public boolean remove(String title, String author){
         for (int i = 0; i < songs.size(); i++) {
             Song current = songs.get(i);
-            if (current.getAuthor().equals(song.getAuthor()) && current.getTitle().equals(song.getTitle())){
+            if (current.getTitle().equalsIgnoreCase(title) && current.getAuthor().equalsIgnoreCase(author)){
                 songs.remove(i);
                 return true;
             }
@@ -27,12 +28,9 @@ public class SongRepository {
         return false;
     }
 
-    public void find(){
-
-    }
 
     public List<Song> getAll(){
-        return songs;
+        return Collections.unmodifiableList(songs);
     }
 
 }

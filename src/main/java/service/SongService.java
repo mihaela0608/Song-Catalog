@@ -1,11 +1,11 @@
 package service;
 
+import model.SearchType;
 import model.Song;
+import model.SortType;
 import repository.SongRepository;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Optional;
+import java.util.*;
 
 public class SongService {
     private final SongRepository songRepository;
@@ -15,7 +15,7 @@ public class SongService {
     }
 
     public boolean addSong(Song song){
-        if (song.getAuthor().isEmpty() || song.getTitle().isEmpty()){
+        if (song.getAuthor().isBlank() || song.getTitle().isBlank()){
             return false;
         }
 
@@ -23,43 +23,47 @@ public class SongService {
             return false;
         }
 
+        boolean exists =
+                songRepository.getAll()
+                        .stream()
+                        .anyMatch(s ->
+                                s.getAuthor().equalsIgnoreCase(song.getAuthor()) &&
+                                        s.getTitle().equalsIgnoreCase(song.getTitle()));
+
+        if (exists) {
+            return false;
+        }
         songRepository.add(song);
         return true;
     }
 
-    public boolean removeSong(Song song){
-        return songRepository.remove(song);
+    public boolean removeSong(String title, String author){
+        return songRepository.remove(title, author);
     }
 
-    public boolean sortSongs(String sortType){
-        if (sortType.equalsIgnoreCase("title")){
-            Collections.sort(songRepository.getAll(), Comparator.comparing(Song::getTitle));
-        } else if (sortType.equalsIgnoreCase("author")) {
-            Collections.sort(songRepository.getAll(), Comparator.comparing(Song::getAuthor));
-        } else if(sortType.equalsIgnoreCase("rating")){
-            Collections.sort(songRepository.getAll(), Comparator.comparing(Song::getRating));
-        } else{
-            return false;
+    public List<Song> sortSongs(SortType sortType){
+        List<Song> sorted = new ArrayList<>(songRepository.getAll());
+        switch (sortType){
+            case TITLE -> sorted.sort(Comparator.comparing(
+                    Song::getTitle,
+                    String.CASE_INSENSITIVE_ORDER
+            ));
+            case AUTHOR -> sorted.sort(Comparator.comparing(
+                    Song::getAuthor,
+                    String.CASE_INSENSITIVE_ORDER
+            ));
+            case RATING -> sorted.sort(Comparator.comparing(Song::getRating));
         }
 
-        return true;
+        return sorted;
     }
 
-    public Song searchSong(String searchType, String forSearch){
-        Song song = null;
-        if (searchType.equalsIgnoreCase("title")){
-            Optional<Song> optionalSong = songRepository.getAll().stream().filter(s -> s.getTitle().equals(forSearch)).findFirst();
-            if (optionalSong.isEmpty()){
-                return song;
-            }
-            song = optionalSong.get();
-        } else if (searchType.equalsIgnoreCase("author")) {
-            Optional<Song> optionalSong = songRepository.getAll().stream().filter(s -> s.getAuthor().equals(forSearch)).findFirst();
-            if (optionalSong.isEmpty()){
-                return song;
-            }
-            song = optionalSong.get();
+    public List<Song> searchSong(SearchType searchType, String forSearch){
+        if(searchType.equals(SearchType.TITLE)) {
+            return songRepository.getAll().stream().filter(s -> s.getTitle().toLowerCase().contains(forSearch.toLowerCase())).toList();
+        } else if (searchType.equals(SearchType.AUTHOR)){
+            return songRepository.getAll().stream().filter(s -> s.getAuthor().toLowerCase().contains(forSearch.toLowerCase())).toList();
         }
-        return song;
+        return Collections.emptyList();
     }
 }
