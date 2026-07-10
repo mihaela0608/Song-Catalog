@@ -1,6 +1,5 @@
 import service.MergeService;
 import service.SongService;
-import service.UndoRedoService;
 
 import java.util.Scanner;
 
@@ -9,7 +8,6 @@ public class main {
         Scanner scanner = new Scanner(System.in);
         SongService songService = new SongService();
         MergeService mergeService = new MergeService();
-        UndoRedoService undoRedoService = new UndoRedoService();
         printGreeting();
         displayMenu();
         int choice = scanner.nextInt();
