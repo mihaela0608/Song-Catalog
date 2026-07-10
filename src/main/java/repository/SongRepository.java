@@ -12,6 +12,9 @@ public class SongRepository {
     public SongRepository() {
         this.songs = new ArrayList<>();
     }
+    public SongRepository(List<Song> songs){
+        this.songs = new ArrayList<>(songs);
+    }
 
     public void add(Song song){
         songs.add(song);
@@ -27,7 +30,9 @@ public class SongRepository {
         }
         return false;
     }
-
+    public void replaceSongs(List<Song> songs){
+        this.songs = new ArrayList<>(songs);
+    }
 
     public List<Song> getAll(){
         return Collections.unmodifiableList(songs);

@@ -10,12 +10,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CatalogStorage {
-    private static final String FILE_NAME = "catalog.json";
     private final Gson gson = new Gson();
 
 
     public boolean save(List<Song> songs){
-        try (FileWriter fileWriter = new FileWriter(FILE_NAME)) {
+        try (FileWriter fileWriter = new FileWriter("catalog.json")) {
             fileWriter.write(gson.toJson(songs));
         } catch (IOException exception){
             System.out.println("Error writing to file");
@@ -24,9 +23,14 @@ public class CatalogStorage {
         return true;
     }
 
-    public List<Song> load(){
+    public List<Song> load(String fileName){
         StringBuilder data = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new FileReader(FILE_NAME))) {
+        File file = new File(fileName);
+
+        if(!file.exists()){
+            return null;
+        }
+        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
             String line;
             while ((line = br.readLine()) != null) {
                 data.append(line);

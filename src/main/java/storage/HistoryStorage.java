@@ -28,6 +28,7 @@ public class HistoryStorage {
         if(!hisoryFile.exists()){
             return new History();
         }
+
         try (BufferedReader br = new BufferedReader(new FileReader(FILE_NAME))) {
             String line;
             while ((line = br.readLine()) != null) {
