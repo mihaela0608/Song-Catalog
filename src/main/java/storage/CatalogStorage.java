@@ -11,16 +11,20 @@ import java.util.List;
 
 public class CatalogStorage {
     private final Gson gson = new Gson();
-
+    private static final String DEFAULT_FILE = "catalog.json";
 
     public boolean save(List<Song> songs){
-        try (FileWriter fileWriter = new FileWriter("catalog.json")) {
+        try (FileWriter fileWriter = new FileWriter(DEFAULT_FILE)) {
             fileWriter.write(gson.toJson(songs));
         } catch (IOException exception){
             System.out.println("Error writing to file");
             return false;
         }
         return true;
+    }
+
+    public List<Song> load(){
+        return load(DEFAULT_FILE);
     }
 
     public List<Song> load(String fileName){

@@ -16,4 +16,14 @@ public class Song {
         this.author = author;
         this.rating = rating;
     }
+
+    @Override
+    public String toString() {
+        return String.format(
+                "Title: %s | Artist: %s | Rating: %d",
+                title,
+                author,
+                rating
+        );
+    }
 }

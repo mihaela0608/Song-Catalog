@@ -3,6 +3,7 @@ package service;
 import model.SearchType;
 import model.Song;
 import model.SortType;
+import model.Statistics;
 import repository.SongRepository;
 import storage.CatalogStorage;
 
@@ -13,13 +14,20 @@ public class SongService {
     private final UndoRedoService undoRedoService;
     private final CatalogStorage catalogStorage;
 
-    public SongService() {
+    public SongService(){
+
         this.catalogStorage = new CatalogStorage();
         this.undoRedoService = new UndoRedoService();
-        this.songRepository = new SongRepository(
-                undoRedoService.getCurrentState()
-        );
+
+        List<Song> songs = catalogStorage.load("catalog.json");
+
+        if(songs == null){
+            songs = new ArrayList<>();
+        }
+
+        this.songRepository = new SongRepository(songs);
     }
+
 
     public boolean addSong(Song song){
         if (song.getAuthor().isBlank() || song.getTitle().isBlank()){
@@ -118,15 +126,75 @@ public class SongService {
         return true;
     }
 
-    public void undo(){
+    public boolean undo(){
         List<Song> songs = undoRedoService.undo();
-        catalogStorage.save(songs);
+
+        if(songs == null){
+            return false;
+        }
+
         songRepository.replaceSongs(songs);
+        catalogStorage.save(songs);
+
+        return true;
     }
 
-    public void redo(){
+    public boolean redo(){
         List<Song> songs = undoRedoService.redo();
-        catalogStorage.save(songs);
+
+        if(songs == null){
+            return false;
+        }
+
         songRepository.replaceSongs(songs);
+        catalogStorage.save(songs);
+
+        return true;
+    }
+
+    public List<Song> getAllSongs() {
+        return new ArrayList<>(songRepository.getAll());
+    }
+    public Statistics getStatistics(){
+
+        List<Song> songs = songRepository.getAll();
+
+        if(songs.isEmpty()){
+            return new Statistics(
+                    0,
+                    0,
+                    0,
+                    null,
+                    null
+            );
+        }
+
+        int totalSongs = songs.size();
+
+        int totalArtists = (int) songs.stream()
+                .map(Song::getAuthor)
+                .distinct()
+                .count();
+
+        double averageRating = songs.stream()
+                .mapToInt(Song::getRating)
+                .average()
+                .orElse(0);
+
+        Song highestRated = songs.stream()
+                .max(Comparator.comparing(Song::getRating))
+                .orElse(null);
+
+        Song lowestRated = songs.stream()
+                .min(Comparator.comparing(Song::getRating))
+                .orElse(null);
+
+        return new Statistics(
+                totalSongs,
+                totalArtists,
+                averageRating,
+                highestRated,
+                lowestRated
+        );
     }
 }
